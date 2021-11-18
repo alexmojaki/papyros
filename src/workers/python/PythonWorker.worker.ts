@@ -28,7 +28,7 @@ class PythonWorker extends Backend {
         this.initialized = false;
     }
 
-    override async launch(onEvent: (e: PapyrosEvent) => void,
+    override async launch(onEvent: (e: PapyrosEvent | Array<PapyrosEvent>) => void,
         inputTextArray?: Uint8Array, inputMetaData?: Int32Array): Promise<void> {
         await super.launch(onEvent, inputTextArray, inputMetaData);
         const pyodide = await loadPyodide({

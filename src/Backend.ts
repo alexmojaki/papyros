@@ -1,5 +1,5 @@
 import { INPUT_RELATIVE_URL } from "./Constants";
-import { PapyrosEvent } from "./PapyrosEvent";
+import { isUrgent, PapyrosEvent } from "./PapyrosEvent";
 import { LogType, papyrosLog } from "./util/Logging";
 
 function getInputCallback(inputTextArray?: Uint8Array, inputMetaData?: Int32Array): () => string {
@@ -35,11 +35,17 @@ function getInputCallback(inputTextArray?: Uint8Array, inputMetaData?: Int32Arra
     }
 }
 
+const START_BUFFERING_THRESHOLD = 1000;
+const QUEUE_FLUSH_SIZE = 1000;
 export abstract class Backend {
+    eventCounter: number;
+    eventQueue: Array<PapyrosEvent>;
     onEvent: (e: PapyrosEvent) => void;
     runId: string;
 
     constructor() {
+        this.eventCounter = 0;
+        this.eventQueue = [];
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         this.onEvent = () => { };
         this.runId = "";
@@ -52,12 +58,26 @@ export abstract class Backend {
      * @param {Int32Array} inputMetaData Optional shared buffer for metadata about input
      * @return {Promise<void>} Promise of launching
      */
-    launch(onEvent: (e: PapyrosEvent) => void,
+    launch(onEvent: (e: PapyrosEvent | Array<PapyrosEvent>) => void,
         inputTextArray?: Uint8Array, inputMetaData?: Int32Array): Promise<void> {
         const inputCallback = getInputCallback(inputTextArray, inputMetaData);
         this.onEvent = (e: PapyrosEvent) => {
             e.runId = this.runId;
-            onEvent(e);
+            this.eventCounter += 1;
+            if (this.eventCounter >= START_BUFFERING_THRESHOLD) {
+                this.eventQueue.push(e);
+            }
+            // urgent messages or buffer is filled up enough
+            if (isUrgent(e) || this.eventQueue.length >= QUEUE_FLUSH_SIZE) {
+                if (this.eventQueue.length > 0) {
+                    onEvent(this.eventQueue);
+                    this.eventQueue = [];
+                } else {
+                    onEvent(e);
+                }
+            } else {
+                onEvent(e);
+            }
             if (e.type === "input") {
                 return inputCallback();
             }
@@ -74,6 +94,8 @@ export abstract class Backend {
      * @return {Promise<void>} Promise of execution
      */
     async runCode(code: string, runId: string): Promise<void> {
+        this.eventCounter = 0;
+        this.eventQueue = [];
         this.runId = runId;
         papyrosLog(LogType.Debug, "Running code in worker: ", code);
         try {

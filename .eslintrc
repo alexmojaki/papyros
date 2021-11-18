@@ -20,7 +20,8 @@
           "exports": "only-multiline",
           "functions": "never"
       }],
-      "indent": ["error", 4],
+      "indent": "off",
+      "@typescript-eslint/indent": ["error", 4],
       "max-len": ["warn", { "code": 100 }],
       "no-invalid-this": "warn",
       "no-param-reassign": ["error", { "props": false }],
@@ -38,7 +39,7 @@
       "jest/globals": true
     },
     "globals": {
-      "I18n": "readonly",
+      "I18n": "readonly"
     },
     "overrides": [
       {

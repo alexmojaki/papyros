@@ -3,3 +3,7 @@ export interface PapyrosEvent {
     data: string;
     runId: string;
 }
+
+export function isUrgent(e: PapyrosEvent): boolean {
+    return e.type !== "output";
+}

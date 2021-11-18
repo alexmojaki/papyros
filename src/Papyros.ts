@@ -112,18 +112,37 @@ export function papyros(inputTextArray?: Uint8Array, inputMetaData?: Int32Array)
         }
     }
 
-    function onMessage(e: PapyrosEvent): void {
-        papyrosLog(LogType.Debug, "received event in onMessage", e);
-        if (e.runId === runId) {
-            if (e.type === "output") {
-                outputArea.value += e.data;
-            } else if (e.type === "input") {
-                onInput(e);
-            } else if (e.type === "error") {
-                onError(e);
-            }
+    function onOutput(e: PapyrosEvent): void {
+        outputArea.value += e.data;
+    }
+
+    function onMessage(e: PapyrosEvent | Array<PapyrosEvent>): void {
+        let events: Array<PapyrosEvent> = [];
+        if (!Array.isArray(e)) {
+            events = [e];
         } else {
-            papyrosLog(LogType.Debug, "Received event with outdated runId: ", e);
+            events = e;
+        }
+        // papyrosLog(LogType.Debug, "received event in onMessage", e);
+        if (events.length === 0 || events[0].runId !== runId) {
+            papyrosLog(LogType.Debug, "Received event with outdated runId");
+        } else {
+            events.forEach(event => {
+                switch (event.type) {
+                    case "output": {
+                        onOutput(event);
+                        break;
+                    }
+                    case "input": {
+                        onInput(event);
+                        break;
+                    }
+                    case "error": {
+                        onError(event);
+                        break;
+                    }
+                }
+            });
         }
     }
 
