@@ -617,7 +617,7 @@
     "@codemirror/state" "^0.19.0"
     "@codemirror/view" "^0.19.0"
 
-"@codemirror/view@^0.19.0":
+"@codemirror/view@^0.19.0", "@codemirror/view@^0.19.20":
   version "0.19.20"
   resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-0.19.20.tgz#77969ff93cb097e3d4c9245b32e220efb80131be"
   integrity sha512-j4cI/Egdhha77pMfKQQWZmpkcF7vhe21LqdZs8hsG09OtvsPVCHUXmfB0u7nMpcX1JR8aZ3ob9g6FMr+OVtjgA==

@@ -68,7 +68,14 @@ export function papyros(inputTextArray?: Uint8Array, inputMetaData?: Int32Array)
 
     function initEditor(language: ProgrammingLanguage): void {
         codeEditor = new CodeEditor(
-            document.getElementById(CODE_TA_ID) as HTMLInputElement, language);
+            document.getElementById(CODE_TA_ID) as HTMLInputElement, language,
+            () => {
+                if (stateText.innerText !== "") {
+                    return false;
+                }
+                runCode();
+                return true;
+            });
     }
 
     function initTextAreas(): void {
